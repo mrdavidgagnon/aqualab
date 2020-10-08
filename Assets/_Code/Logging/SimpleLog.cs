@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
+using BeauData;
 using UnityEngine;
 
 namespace Logging
@@ -10,7 +12,7 @@ namespace Logging
         private string player_id;
 
         private bool flushing = false;
-        private List<Dictionary<string, string>> accrued_log = new List<Dictionary<string, string>>();
+        private AccruedLog accrued_log;
         private int flushed_to = 0;
         private int flush_index = 0;
 
@@ -19,6 +21,8 @@ namespace Logging
         private long session_id;
         private string persistent_session_id;
 
+        private string req_url;
+
         public SimpleLog(string app_id, int app_version)
         {
             this.app_id = app_id;
@@ -26,32 +30,82 @@ namespace Logging
 
             session_id = UUIDint();
 
-            Debug.Log(session_id);
+            // TODO: Change type of persistent_session_id to fix this mess
+            persistent_session_id = GetCookie("persistent_session_id");
 
-            // persistent_session_id = getCookie("persistent_session_id");
+            if (persistent_session_id == null)
+            {
+                persistent_session_id = session_id.ToString();
+                SetCookie("persistent_session_id", Int32.Parse(persistent_session_id), 100);
+            }
 
-            // if (persistent_session_id == null)
+            string player_id_str = player_id != null ? "&player_id=" + Uri.EscapeDataString(player_id.ToString()) : "";
 
+            req_url = "https://fielddaylab.wisc.edu/logger/log.php?app_id=" + Uri.EscapeDataString(app_id) + 
+                        "&app_version=" + Uri.EscapeDataString(app_version.ToString()) + "&session_id=" + 
+                        Uri.EscapeDataString(session_id.ToString()) + "&persistent_session_id=" + 
+                        Uri.EscapeDataString("pers") + player_id_str;
         }
 
         public void Log(Dictionary<string, string> data)
         {
-            data[session_id.ToString()] = flush_index.ToString();
+            data["session_n"] = flush_index.ToString();
             // data[client_time] = (new Date()).toISOString().split('T').join(" ");
 
             flush_index++;
-            accrued_log.Add(data);
+            accrued_log = new AccruedLog(data);
             Flush();
         }
 
         public void Flush()
         {
-            if (flushing) return;
+            if (flushing || accrued_log.Count() == 0) return;
+
             flushing = true;
 
-            if (accrued_log.Count == 0) return;
+            string post_url = req_url + "&req_id=" + Uri.EscapeDataString(UUIDint().ToString());
 
-            HttpWebRequest hwr = (HttpWebRequest)WebRequest.Create("");
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(post_url);
+            req.Method = "POST";
+            req.ContentType = "application/x-www-form-urlencoded";
+            
+            HttpWebResponse res = (HttpWebResponse)req.GetResponse(); 
+
+            int flushed = Int32.Parse(accrued_log.Data[accrued_log.Count() - 1]["session_n"]);
+            int cutoff = accrued_log.Count() - 1;
+
+                for (var i = accrued_log.Count() - 1; i >= 0 && Int32.Parse(accrued_log.Data[i]["session_n"]) > flushed; --i) 
+                {
+                    cutoff = i - 1;
+                }
+
+                if (cutoff >= 0) 
+                {
+                    Splice(accrued_log.Data, 0, cutoff + 1);
+                }
+
+                flushing = false;
+
+            string post = "data=" + Uri.EscapeDataString(btoa(Serializer.Write<AccruedLog>(accrued_log)));
+
+            
+            res.Close();
+        }
+
+        // From https://stackoverflow.com/questions/28833373/javascript-splice-in-c-sharp
+        private List<T> Splice<T>(List<T> source, int index, int count)
+        {
+            var items = source.GetRange(index, count);
+            source.RemoveRange(index, count);
+            return items;
+        }
+
+        // From https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
+        private string btoa(string str)
+        {
+            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(str);
+            string str64 = System.Convert.ToBase64String(bytes);
+            return str64;
         }
 
         private long UUIDint()
@@ -82,6 +136,18 @@ namespace Logging
             }
 
             return Int64.Parse(id);
+        }
+
+        private string GetCookie(string name)
+        {
+            return "";
+        }
+
+        private string SetCookie(string name, int val, int days)
+        {
+            DateTime dt = DateTime.Now;
+            //dt.Add(dt.TimeOfDay + (dt.Day * 24 * 60 * 60 * 1000));
+            return "";
         }
     }
 }
