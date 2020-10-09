@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using BeauData;
@@ -12,7 +13,7 @@ namespace Logging
         private string player_id;
 
         private bool flushing = false;
-        private AccruedLog accrued_log;
+        private AccruedLog accrued_log = new AccruedLog();
         private int flushed_to = 0;
         private int flush_index = 0;
 
@@ -20,6 +21,7 @@ namespace Logging
         private int app_version;
         private long session_id;
         private string persistent_session_id;
+        private Cookie cookie = new Cookie();
 
         private string req_url;
 
@@ -30,30 +32,30 @@ namespace Logging
 
             session_id = UUIDint();
 
-            // TODO: Change type of persistent_session_id to fix this mess
             persistent_session_id = GetCookie("persistent_session_id");
 
             if (persistent_session_id == null)
             {
                 persistent_session_id = session_id.ToString();
-                SetCookie("persistent_session_id", Int32.Parse(persistent_session_id), 100);
+                SetCookie("persistent_session_id", Int64.Parse(persistent_session_id), 100);
             }
 
             string player_id_str = player_id != null ? "&player_id=" + Uri.EscapeDataString(player_id.ToString()) : "";
 
-            req_url = "https://fielddaylab.wisc.edu/logger/log.php?app_id=" + Uri.EscapeDataString(app_id) + 
-                        "&app_version=" + Uri.EscapeDataString(app_version.ToString()) + "&session_id=" + 
-                        Uri.EscapeDataString(session_id.ToString()) + "&persistent_session_id=" + 
-                        Uri.EscapeDataString("pers") + player_id_str;
+            req_url = "https://fielddaylab.wisc.edu/logger/log.php?app_id=" + Uri.EscapeDataString(app_id) +
+                        "&app_version=" + Uri.EscapeDataString(app_version.ToString()) + "&session_id=" +
+                        Uri.EscapeDataString(session_id.ToString()) + "&persistent_session_id=" +
+                        Uri.EscapeDataString(persistent_session_id) + player_id_str;
         }
 
         public void Log(Dictionary<string, string> data)
         {
             data["session_n"] = flush_index.ToString();
-            // data[client_time] = (new Date()).toISOString().split('T').join(" ");
+            data["client_time"] = DateTime.Now.ToString();
 
             flush_index++;
-            accrued_log = new AccruedLog(data);
+            accrued_log.Data.Add(data);
+
             Flush();
         }
 
@@ -65,34 +67,47 @@ namespace Logging
 
             string post_url = req_url + "&req_id=" + Uri.EscapeDataString(UUIDint().ToString());
 
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(post_url);
+            Debug.Log(post_url);
+
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://postman-echo.com/post");
             req.Method = "POST";
             req.ContentType = "application/x-www-form-urlencoded";
+
+            string post = "data=" + Uri.EscapeDataString(btoa(Serializer.Write<AccruedLog>(accrued_log)));
+            byte[] postArray = Encoding.ASCII.GetBytes(post);
             
-            HttpWebResponse res = (HttpWebResponse)req.GetResponse(); 
+            Stream dataStream = req.GetRequestStream();
+            dataStream.Write(postArray, 0, postArray.Length);
+            dataStream.Close();
 
-            int flushed = Int32.Parse(accrued_log.Data[accrued_log.Count() - 1]["session_n"]);
-            int cutoff = accrued_log.Count() - 1;
+            HttpWebResponse res = (HttpWebResponse)req.GetResponse();
 
-                for (var i = accrued_log.Count() - 1; i >= 0 && Int32.Parse(accrued_log.Data[i]["session_n"]) > flushed; --i) 
+            if (res.StatusCode == HttpStatusCode.OK)
+            {
+                int flushed = Int32.Parse(accrued_log.Data[accrued_log.Count() - 1]["session_n"]);
+                int cutoff = accrued_log.Count() - 1;
+
+                for (var i = accrued_log.Count() - 1; i >= 0 && Int32.Parse(accrued_log.Data[i]["session_n"]) > flushed; --i)
                 {
                     cutoff = i - 1;
                 }
 
-                if (cutoff >= 0) 
+                if (cutoff >= 0)
                 {
                     Splice(accrued_log.Data, 0, cutoff + 1);
                 }
 
                 flushing = false;
+            }
 
-            string post = "data=" + Uri.EscapeDataString(btoa(Serializer.Write<AccruedLog>(accrued_log)));
+            Debug.Log(res.StatusCode);
 
-            
             res.Close();
         }
 
-        // From https://stackoverflow.com/questions/28833373/javascript-splice-in-c-sharp
+        #region Utility Functions
+
+        // https://stackoverflow.com/questions/28833373/javascript-splice-in-c-sharp
         private List<T> Splice<T>(List<T> source, int index, int count)
         {
             var items = source.GetRange(index, count);
@@ -100,7 +115,7 @@ namespace Logging
             return items;
         }
 
-        // From https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
+        // https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
         private string btoa(string str)
         {
             byte[] bytes = Encoding.GetEncoding(28591).GetBytes(str);
@@ -130,7 +145,7 @@ namespace Logging
 
             System.Random rand = new System.Random();
 
-            for (int i = 0; i < 5; ++i) 
+            for (int i = 0; i < 5; ++i)
             {
                 id += Math.Floor(rand.NextDouble() * 10);
             }
@@ -140,15 +155,39 @@ namespace Logging
 
         private string GetCookie(string name)
         {
+            string full_cookie = Uri.EscapeDataString(cookie.Value);
+
+            if (full_cookie == "")
+            {
+                return "";
+            }
+
+            string[] cookies = full_cookie.Split(';');
+            string full_name = name + "=";
+
+            for (int i = 0; i < cookies.Length; ++i)
+            {
+                string c = cookies[i];
+
+                while (c[0] == ' ')
+                {
+                    c = c.Substring(1);
+                }
+
+                if (c.IndexOf(full_name) == 0)
+                {
+                    return c.Substring(full_name.Length, c.Length);
+                }
+            }
+
             return "";
         }
 
-        private string SetCookie(string name, int val, int days)
+        private void SetCookie(string name, long val, int days)
         {
-            DateTime dt = DateTime.Now;
-            //dt.Add(dt.TimeOfDay + (dt.Day * 24 * 60 * 60 * 1000));
-            return "";
+            cookie.Value = name + "=" + val + "; expires=" + DateTime.Now.ToString() + "; path=/";
         }
+
+        #endregion // Utility Functions
     }
 }
-

@@ -12,7 +12,7 @@ namespace Logging
             Dictionary<string, string> data = new Dictionary<string, string>();
             data["test"] = "test";
 
-            //slog.Log(data);
+            slog.Log(data);
         }
     }
 }

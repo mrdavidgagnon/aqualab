@@ -7,11 +7,7 @@ namespace Logging
     {
         private List<Dictionary<string, string>> data = new List<Dictionary<string, string>>();
 
-        public AccruedLog(Dictionary<string, string> data)
-        {
-            this.data.Add(data);
-        }
-
+        // TODO: What needs to be serialized here?
         public void Serialize(Serializer ioSerializer)
         {
 
