@@ -5,22 +5,22 @@ namespace Logging
 {
     public class AccruedLog : ISerializedObject
     {
-        private List<Dictionary<string, string>> data = new List<Dictionary<string, string>>();
+        private List<LogData> logData = new List<LogData>();
 
-        // TODO: What needs to be serialized here?
         public void Serialize(Serializer ioSerializer)
         {
-
+            ioSerializer.ObjectArray("logData", ref logData);
         }
 
         public int Count()
         {
-            return data.Count;
+            return logData.Count;
         }
 
-        public List<Dictionary<string, string>> Data
+        public List<LogData> LogData
         {
-            get { return data; }
+            get { return logData; }
+            set { logData = value; }
         }
     }
 }
