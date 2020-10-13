@@ -38,6 +38,7 @@ namespace Logging
 
             if (playerId != null && playerIdRegex.IsMatch(playerId))
             {
+                // Application.OpenUrl
                 // reload ("https://fielddaylab.wisc.edu/studies/" + Uri.EscapeDataString(appId.ToLower()))
                 playerId = null;
             }
@@ -81,6 +82,7 @@ namespace Logging
             req.ContentType = "application/x-www-form-urlencoded";
 
             // Write the AccruedLog to a JSON string, convert it to base64, and create a byte array from that base64 string
+            // Stringify and ensure ASCII (?) from jowilder simplelog
             string post = "data=" + Uri.EscapeDataString(SimpleLogUtils.btoa(Serializer.Write<AccruedLog>(accruedLog)));
             byte[] postArray = Encoding.ASCII.GetBytes(post);
             

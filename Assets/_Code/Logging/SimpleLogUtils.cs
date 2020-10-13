@@ -18,7 +18,7 @@ namespace Logging
         // https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
         public static string btoa(string str)
         {
-            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(str);
+            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(str); // Give constant name - Western European ISO
             string str64 = System.Convert.ToBase64String(bytes);
             return str64;
         }
@@ -53,6 +53,7 @@ namespace Logging
             return Int64.Parse(id);
         }
 
+        // Build for WebGL
         public static string GetCookie(Cookie cookie, string name)
         {
             string full_cookie = Uri.EscapeDataString(cookie.Value);
@@ -83,6 +84,7 @@ namespace Logging
             return "";
         }
 
+        // Use days to increment
         public static void SetCookie(Cookie cookie, string name, long val, int days)
         {
             cookie.Value = name + "=" + val + "; expires=" + DateTime.Now.ToString() + "; path=/";
