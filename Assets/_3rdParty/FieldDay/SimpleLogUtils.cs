@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Logging
+namespace FieldDay
 {
     public class SimpleLogUtils
     {
@@ -88,6 +88,21 @@ namespace Logging
         public static void SetCookie(Cookie cookie, string name, long val, int days)
         {
             cookie.Value = name + "=" + val + "; expires=" + DateTime.Now.ToString() + "; path=/";
+        }
+
+        public static string BuildDataString(Dictionary<string, string> data)
+        {
+            StringBuilder jsonBuilder = new StringBuilder();
+
+            foreach (KeyValuePair<string, string> kvp in data)
+            {
+                jsonBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
+            }
+
+            // Remove trailing comma
+            jsonBuilder.Length--;
+
+            return jsonBuilder.ToString();
         }
     }
 }
