@@ -7,20 +7,15 @@ namespace FieldDay
 {
     public class SimpleLogUtils
     {
-        // https://stackoverflow.com/questions/28833373/javascript-splice-in-c-sharp
-        public static List<T> Splice<T>(List<T> source, int index, int count)
-        {
-            var items = source.GetRange(index, count);
-            source.RemoveRange(index, count);
-            return items;
-        }
+        private const int ISOEncodingId = 28591;
+
+        private static StringBuilder stringBuilder = new StringBuilder();
 
         // https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
         public static string btoa(string str)
         {
-            byte[] bytes = Encoding.GetEncoding(28591).GetBytes(str); // Give constant name - Western European ISO
-            string str64 = System.Convert.ToBase64String(bytes);
-            return str64;
+            byte[] bytes = Encoding.GetEncoding(ISOEncodingId).GetBytes(str);
+            return System.Convert.ToBase64String(bytes);
         }
 
         public static long UUIDint()
@@ -84,26 +79,41 @@ namespace FieldDay
             return "";
         }
 
-        // Use days to increment
-        public static void SetCookie(Cookie cookie, string name, long val, int days)
+        public static Cookie SetCookie(Cookie cookie, string name, long val, int days)
         {
-            cookie.Value = name + "=" + val + "; expires=" + DateTime.Now.ToString() + "; path=/";
+            DateTime newDate = DateTime.Now.AddDays(days);
+            cookie.Value = name + "=" + val + "; expires=" + newDate + "; path=/";
+            return cookie;
         }
 
-        public static string BuildDataString(Dictionary<string, string> data)
+        public static string BuildDataString(List<ILogEvent> log)
         {
             StringBuilder jsonBuilder = new StringBuilder();
 
-            foreach (KeyValuePair<string, string> kvp in data)
+            foreach (ILogEvent logEvent in log)
             {
-                jsonBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
+                foreach (KeyValuePair<string, string> kvp in logEvent.Data)
+                {
+                    jsonBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
+                }
             }
 
             // Remove trailing comma
             jsonBuilder.Length--;
 
-            return jsonBuilder.ToString();
+            return btoa(jsonBuilder.ToString());
+        }
+
+        // https://stackoverflow.com/questions/39111586/stringbuilder-appendformat-ienumarble
+        // TODO: Wrote this function to clean up lots of duplicated lines for string building,
+        // but I'm not sure if it makes things slower or not
+        public static string BuildUrlString(string formatString, object[] args)
+        {
+            stringBuilder.AppendFormat(formatString, args);
+            string urlString = stringBuilder.ToString();
+            stringBuilder.Clear();
+            
+            return urlString;
         }
     }
 }
-

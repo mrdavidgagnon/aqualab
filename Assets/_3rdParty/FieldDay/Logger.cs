@@ -12,9 +12,7 @@ namespace FieldDay
             Dictionary<string, string> data = new Dictionary<string, string>();
             data["test"] = "test";
 
-            LogEvent le = new LogEvent(data);
-
-            slog.Log(le);
+            slog.Log(new LogEvent(data));
         }
     }
 
