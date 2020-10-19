@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine.Networking;
 
@@ -23,10 +22,7 @@ namespace FieldDay
         private int appVersion;
         private long sessionId;
         private string persistentSessionId;
-        // TODO: Set cookies in request header
-        // https://stackoverflow.com/questions/54801364/unitywebrequest-how-to-get-set-cookies
-        private Cookie cookie = new Cookie();
-
+        private string cookie;
         private string reqUrl;
 
         public SimpleLog(string inAppId, int inAppVersion)
@@ -49,7 +45,7 @@ namespace FieldDay
             if (persistentSessionId == null)
             {
                 persistentSessionId = sessionId.ToString();
-                cookie = SimpleLogUtils.SetCookie(cookie, "persistent_session_id", Int64.Parse(persistentSessionId), 100);
+                cookie = SimpleLogUtils.SetCookie("persistent_session_id", Int64.Parse(persistentSessionId), 100);
             }
 
             string playerIdStr = "";
@@ -60,7 +56,7 @@ namespace FieldDay
             }
 
             reqUrl = SimpleLogUtils.BuildUrlString("https://fielddaylab.wisc.edu/logger/log.php?app_id={0}&app_version={1}&session_id={2}&persistent_session_id={3}{4}",
-                                                    new object[] {Uri.EscapeDataString(appId), Uri.EscapeDataString(appVersion.ToString()), 
+                                                    new object[] {Uri.EscapeDataString(appId), Uri.EscapeDataString(appVersion.ToString()),
                                                     Uri.EscapeDataString(sessionId.ToString()), Uri.EscapeDataString(persistentSessionId), playerIdStr});
         }
 
@@ -94,6 +90,10 @@ namespace FieldDay
             // Send a POST request to https://fielddaylab.wisc.edu/logger/log.php with the proper content type
             UnityWebRequest req = UnityWebRequest.Post(postUrl, postData);
             req.SetRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            if (cookie != null)
+            {
+                req.SetRequestHeader("Cookie", cookie);
+            }
 
             UnityWebRequestAsyncOperation reqOperation = req.SendWebRequest();
 

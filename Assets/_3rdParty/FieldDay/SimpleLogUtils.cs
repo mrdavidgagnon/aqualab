@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 
 namespace FieldDay
@@ -8,15 +7,7 @@ namespace FieldDay
     public class SimpleLogUtils
     {
         private const int ISOEncodingId = 28591;
-
         private static StringBuilder stringBuilder = new StringBuilder();
-
-        // https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
-        public static string btoa(string str)
-        {
-            byte[] bytes = Encoding.GetEncoding(ISOEncodingId).GetBytes(str);
-            return System.Convert.ToBase64String(bytes);
-        }
 
         public static long UUIDint()
         {
@@ -48,10 +39,14 @@ namespace FieldDay
             return Int64.Parse(id);
         }
 
-        // Build for WebGL
-        public static string GetCookie(Cookie cookie, string name)
+        public static string GetCookie(string cookie, string name)
         {
-            string full_cookie = Uri.EscapeDataString(cookie.Value);
+            if (cookie ==  null)
+            {
+                return "";
+            }
+
+            string full_cookie = Uri.EscapeDataString(cookie);
 
             if (full_cookie == "")
             {
@@ -79,29 +74,28 @@ namespace FieldDay
             return "";
         }
 
-        public static Cookie SetCookie(Cookie cookie, string name, long val, int days)
+        public static string SetCookie(string name, long val, int days)
         {
             DateTime newDate = DateTime.Now.AddDays(days);
-            cookie.Value = name + "=" + val + "; expires=" + newDate + "; path=/";
-            return cookie;
+            return name + "=" + val + "; expires=" + newDate + "; path=/";
         }
 
         public static string BuildDataString(List<ILogEvent> log)
         {
-            StringBuilder jsonBuilder = new StringBuilder();
-
             foreach (ILogEvent logEvent in log)
             {
                 foreach (KeyValuePair<string, string> kvp in logEvent.Data)
                 {
-                    jsonBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
+                    stringBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
                 }
             }
 
             // Remove trailing comma
-            jsonBuilder.Length--;
+            stringBuilder.Length--;
+            string jsonString = stringBuilder.ToString();
+            stringBuilder.Clear();
 
-            return btoa(jsonBuilder.ToString());
+            return btoa(jsonString);
         }
 
         // https://stackoverflow.com/questions/39111586/stringbuilder-appendformat-ienumarble
@@ -114,6 +108,13 @@ namespace FieldDay
             stringBuilder.Clear();
             
             return urlString;
+        }
+
+        // https://stackoverflow.com/questions/46093210/c-sharp-version-of-the-javascript-function-btoa
+        public static string btoa(string str)
+        {
+            byte[] bytes = Encoding.GetEncoding(ISOEncodingId).GetBytes(str);
+            return System.Convert.ToBase64String(bytes);
         }
     }
 }
