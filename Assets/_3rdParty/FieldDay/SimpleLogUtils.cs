@@ -1,11 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FieldDay
 {
     public class SimpleLogUtils
     {
+        // TODO: Does it make more sense to have these imports here, or in SimpleLog?
+        [DllImport("__Internal")]
+        public static extern string GetCookie(string name);
+
+        [DllImport("__Internal")]
+        public static extern void SetCookie(string name, string val, int days);
+        
         private const int ISOEncodingId = 28591;
         private static StringBuilder stringBuilder = new StringBuilder();
 
@@ -39,47 +47,6 @@ namespace FieldDay
             return Int64.Parse(id);
         }
 
-        public static string GetCookie(string cookie, string name)
-        {
-            if (cookie ==  null)
-            {
-                return "";
-            }
-
-            string full_cookie = Uri.EscapeDataString(cookie);
-
-            if (full_cookie == "")
-            {
-                return "";
-            }
-
-            string[] cookies = full_cookie.Split(';');
-            string full_name = name + "=";
-
-            for (int i = 0; i < cookies.Length; ++i)
-            {
-                string c = cookies[i];
-
-                while (c[0] == ' ')
-                {
-                    c = c.Substring(1);
-                }
-
-                if (c.IndexOf(full_name) == 0)
-                {
-                    return c.Substring(full_name.Length, c.Length);
-                }
-            }
-
-            return "";
-        }
-
-        public static string SetCookie(string name, long val, int days)
-        {
-            DateTime newDate = DateTime.Now.AddDays(days);
-            return name + "=" + val + "; expires=" + newDate + "; path=/";
-        }
-
         public static string BuildDataString(List<ILogEvent> log)
         {
             foreach (ILogEvent logEvent in log)
@@ -99,9 +66,7 @@ namespace FieldDay
         }
 
         // https://stackoverflow.com/questions/39111586/stringbuilder-appendformat-ienumarble
-        // TODO: Wrote this function to clean up lots of duplicated lines for string building,
-        // but I'm not sure if it makes things slower or not
-        public static string BuildUrlString(string formatString, object[] args)
+        public static string BuildUrlString(string formatString, params object[] args)
         {
             stringBuilder.AppendFormat(formatString, args);
             string urlString = stringBuilder.ToString();

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using BeauUtil;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FieldDay
@@ -22,42 +24,50 @@ namespace FieldDay
         private int appVersion;
         private long sessionId;
         private string persistentSessionId;
-        private string cookie;
         private string reqUrl;
 
-        public SimpleLog(string inAppId, int inAppVersion)
+        public SimpleLog(string inAppId, int inAppVersion, QueryParams queryParams)
         {
             appId = inAppId;
             appVersion = inAppVersion;
 
-            //QueryParams queryParams = Services.Data.PeekQueryParams();
-            //playerId = queryParams.Get("player_id");
+            if (queryParams != null)
+            {
+                playerId = queryParams.Get("player_id");
+            }
 
             if (playerId != null && playerIdRegex.IsMatch(playerId))
             {
-                // Application.OpenUrl("https://fielddaylab.wisc.edu/studies/" + Uri.EscapeDataString(appId.ToLower()))
+                Application.OpenURL("https://fielddaylab.wisc.edu/studies/" + Uri.EscapeDataString(appId.ToLower()));
                 playerId = null;
             }
 
             sessionId = SimpleLogUtils.UUIDint();
-            persistentSessionId = SimpleLogUtils.GetCookie(cookie, "persistent_session_id");
+
+            #if UNITY_EDITOR
+            persistentSessionId = "";
+
+            #else
+            persistentSessionId = SimpleLogUtils.GetCookie("persistent_session_id");
+            Debug.Log("PERSISTENT SESSION ID: " + persistentSessionId);
 
             if (persistentSessionId == null)
             {
                 persistentSessionId = sessionId.ToString();
-                cookie = SimpleLogUtils.SetCookie("persistent_session_id", Int64.Parse(persistentSessionId), 100);
+                SimpleLogUtils.SetCookie("persistent_session_id", persistentSessionId, 100);
             }
+            #endif
 
             string playerIdStr = "";
 
             if (playerId != null)
             {
-                playerIdStr = SimpleLogUtils.BuildUrlString("&playerId={0}", new object[] {Uri.EscapeDataString(playerId.ToString())});
+                playerIdStr = SimpleLogUtils.BuildUrlString("&playerId={0}", Uri.EscapeDataString(playerId.ToString()));
             }
 
             reqUrl = SimpleLogUtils.BuildUrlString("https://fielddaylab.wisc.edu/logger/log.php?app_id={0}&app_version={1}&session_id={2}&persistent_session_id={3}{4}",
-                                                    new object[] {Uri.EscapeDataString(appId), Uri.EscapeDataString(appVersion.ToString()),
-                                                    Uri.EscapeDataString(sessionId.ToString()), Uri.EscapeDataString(persistentSessionId), playerIdStr});
+                                                    Uri.EscapeDataString(appId), Uri.EscapeDataString(appVersion.ToString()),
+                                                    Uri.EscapeDataString(sessionId.ToString()), Uri.EscapeDataString(persistentSessionId), playerIdStr);
         }
 
         /// <summary>
@@ -81,23 +91,18 @@ namespace FieldDay
             if (flushing || accruedLog.Count == 0) return;
             flushing = true;
 
-            string postUrl = SimpleLogUtils.BuildUrlString("{0}&req_id={1}", new object[] {reqUrl, Uri.EscapeDataString(SimpleLogUtils.UUIDint().ToString())});
+            string postUrl = SimpleLogUtils.BuildUrlString("{0}&req_id={1}", reqUrl, Uri.EscapeDataString(SimpleLogUtils.UUIDint().ToString()));
 
             // Write the AccruedLog to a JSON string and convert it to base64
-            // TODO: Stringify and ensure ASCII (?) from jowilder simplelog
-            string postData = SimpleLogUtils.BuildUrlString("data={0}", new object[] {Uri.EscapeDataString(SimpleLogUtils.BuildDataString(accruedLog))});
+            // TODO: Ensure ASCII from Jo Wilder SimpleLog (if necessary)
+            string postData = SimpleLogUtils.BuildUrlString("data={0}", Uri.EscapeDataString(SimpleLogUtils.BuildDataString(accruedLog)));
 
             // Send a POST request to https://fielddaylab.wisc.edu/logger/log.php with the proper content type
             UnityWebRequest req = UnityWebRequest.Post(postUrl, postData);
             req.SetRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            if (cookie != null)
-            {
-                req.SetRequestHeader("Cookie", cookie);
-            }
 
             UnityWebRequestAsyncOperation reqOperation = req.SendWebRequest();
 
-            // TODO: Yield in coroutine?
             reqOperation.completed += obj => 
             {
                 int flushed = Int32.Parse(accruedLog[accruedLog.Count - 1].Data["session_n"]);

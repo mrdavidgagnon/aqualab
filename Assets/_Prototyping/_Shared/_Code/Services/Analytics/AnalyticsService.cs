@@ -17,6 +17,7 @@ namespace ProtoAqua
 
         [SerializeField] private string m_AppId = "Aqualab";
         [SerializeField] private int m_AppVersion = 1;
+        [SerializeField] private QueryParams m_QueryParams = null;
         
         #endregion // Inspector
 
@@ -26,7 +27,8 @@ namespace ProtoAqua
 
         protected override void OnRegisterService()
         {
-            m_Logger = new SimpleLog(m_AppId, m_AppVersion);
+            m_QueryParams = Services.Data.PeekQueryParams();
+            m_Logger = new SimpleLog(m_AppId, m_AppVersion, m_QueryParams);
         }
 
         protected override void OnDeregisterService()

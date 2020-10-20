@@ -7,7 +7,7 @@ namespace FieldDay
     {
         private void Awake()
         {
-            SimpleLog slog = new SimpleLog("AQUALAB", 0);
+            SimpleLog slog = new SimpleLog("AQUALAB", 0, null);
 
             Dictionary<string, string> data = new Dictionary<string, string>();
             data["test"] = "test";
