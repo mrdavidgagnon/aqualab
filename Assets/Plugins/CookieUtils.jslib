@@ -1,9 +1,9 @@
 mergeInto(LibraryManager.library, {
 
-    GetCookie: function (name {
+    GetCookie: function (name) {
         var full_cookie = decodeURIComponent(document.cookie);
         var cookies = full_cookie.split(';');
-        var name = name + "="
+        var name = Pointer_stringify(name) + "=";
 
         for (var i = 0; i < cookies.length; ++i) {
             var cookie = cookies[i];
@@ -21,6 +21,8 @@ mergeInto(LibraryManager.library, {
     },
 
     SetCookie: function (name, val, days) {
+        var name = Pointer_stringify(name);
+        var val = Pointer_stringify(val);
         var date = new Date();
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         document.cookie = name + "=" + val + "; expires=" + date.toGMTString() + "; path=/";

@@ -49,9 +49,8 @@ namespace FieldDay
 
             #else
             persistentSessionId = SimpleLogUtils.GetCookie("persistent_session_id");
-            Debug.Log("PERSISTENT SESSION ID: " + persistentSessionId);
 
-            if (persistentSessionId == null)
+            if (persistentSessionId == null || persistentSessionId == "")
             {
                 persistentSessionId = sessionId.ToString();
                 SimpleLogUtils.SetCookie("persistent_session_id", persistentSessionId, 100);
@@ -99,7 +98,7 @@ namespace FieldDay
 
             // Send a POST request to https://fielddaylab.wisc.edu/logger/log.php with the proper content type
             UnityWebRequest req = UnityWebRequest.Post(postUrl, postData);
-            req.SetRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            req.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
             UnityWebRequestAsyncOperation reqOperation = req.SendWebRequest();
 
