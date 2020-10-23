@@ -47,43 +47,46 @@ namespace ProtoAqua
 
         #region Logging
 
-        // TODO: The idea here is to take in the necessary log values for each type of click event,
-        //       construct a dictionary for all the values (so that the values can be passed in line
-        //       to this service), and then send the data to the logger as a LogEvent.
-
-        // Note: Used params array here for brevity, otherwise method headers could look really long.
-        //       Could be changed to list each parameter if that makes more sense / provides more clarity.
-        public void LogArgumentClick(params string[] args)
+        // TODO: Should dictionaries be created here, or before the data gets passed to these functions?
+        public void LogModelingBehaviorChange(string scenarioId, IRuleData ruleData, string prevValue, string prevSync, string newSync, string modelingViewCurrent)
         {
-            // Make sure that all the expected values for logging are passed in.
-            if (args.Length != 1) 
-            {
-                throw new ArgumentException("Invalid args length.");
-            }
-
             Dictionary<string, string> data = new Dictionary<string, string>()
             {
-                { "argumentId", args[0] }
+                { "scenario_id", scenarioId },
+                { "rule_data", ruleData.ToJSONString() },
+                { "prev_value", prevValue },
+                { "prev_sync", prevSync },
+                { "new_sync", newSync },
+                { "modeling_view_current", modelingViewCurrent }
             };
 
             m_Logger.Log(new LogEvent(data));
         }
 
-        public void LogExperimentClick(params string[] args)
+        public void LogModelingViewChange(string scenarioId, string clickLocation, string modelingViewLast, string modelingViewCurrent)
         {
-            throw new NotImplementedException();
-        }
+            Dictionary<string, string> data = new Dictionary<string, string>()
+            {
+                { "scenario_id", scenarioId },
+                { "click_location", clickLocation },
+                { "modeling_view_last", modelingViewLast },
+                { "modeling_view_current", modelingViewCurrent }
+            };
 
-        public void LogObservationClick(params string[] args)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void LogModelingClick(params string[] args)
-        {
-            throw new NotImplementedException();
+            m_Logger.Log(new LogEvent(data));
         }
 
         #endregion // Logging
+    }
+
+    // TODO
+    public interface IRuleData
+    {
+        string Organism { get; set; }
+        string ValueType { get; set; }
+        string CurrValue { get; set; }
+
+        // Return rule data values as a single string in JSON format
+        string ToJSONString();
     }
 }
