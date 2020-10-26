@@ -85,6 +85,8 @@ namespace ProtoAqua.Energy
 
             int currentTick = (int) inNewValue;
 
+            Services.Analytics.LogModelingTickChange(m_CurrentTickCounter.text, inNewValue.ToString());
+
             m_CurrentBufferDelay = m_ChangeBufferedDelay;
             UpdateTickText(currentTick);
             UpdateButtons();

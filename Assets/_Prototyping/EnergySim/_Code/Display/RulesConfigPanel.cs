@@ -88,7 +88,12 @@ namespace ProtoAqua.Energy
                                         ValueType = typeof(ushort),
 
                                         Get = () => resourceSettings.DesiredResources[cachedIdx].BaseValue,
-                                        Set = (v) => { resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
+                                            resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty();
+                                        }
                                     };
                                     m_Properties.EnumField(propId, reqConfig)
                                         .State.SetInteractable(!ShouldLockRule(propId));
@@ -105,7 +110,12 @@ namespace ProtoAqua.Energy
                                         WholeNumbers = true,
 
                                         Get = () => resourceSettings.DesiredResources[cachedIdx].BaseValue,
-                                        Set = (v) => { resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
+                                            resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
+                                        }
                                     };
                                     m_Properties.NumberSpinner(propId, reqConfig)
                                         .State.SetInteractable(!ShouldLockRule(propId));
@@ -133,7 +143,12 @@ namespace ProtoAqua.Energy
                                         ValueType = typeof(ushort),
 
                                         Get = () => resourceSettings.ProducingResources[cachedIdx].BaseValue,
-                                        Set = (v) => { resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
+                                            resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
+                                        }
                                     };
                                     m_Properties.EnumField(propId, reqConfig)
                                         .State.SetInteractable(!ShouldLockRule(propId));
@@ -150,7 +165,12 @@ namespace ProtoAqua.Energy
                                         WholeNumbers = true,
 
                                         Get = () => resourceSettings.ProducingResources[cachedIdx].BaseValue,
-                                        Set = (v) => { resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
+                                            resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
+                                        }
                                     };
                                     m_Properties.NumberSpinner(propId, reqConfig)
                                         .State.SetInteractable(!ShouldLockRule(propId));
@@ -190,7 +210,12 @@ namespace ProtoAqua.Energy
                                         ValueType = typeof(float),
 
                                         Get = () => eatSettings.EdibleActors[cachedIdx].Rate,
-                                        Set = (v) => { eatSettings.EdibleActors[cachedIdx].Rate = (float) v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                eatSettings.EdibleActors[cachedIdx].Rate.ToString(), v.ToString());
+                                            eatSettings.EdibleActors[cachedIdx].Rate = (float) v; Dirty(); 
+                                        }
                                     };
 
                                     m_Properties.EnumField(propId, conversionConfig)
@@ -211,7 +236,12 @@ namespace ProtoAqua.Energy
                                         Suffix = "x",
 
                                         Get = () => eatSettings.EdibleActors[cachedIdx].Rate,
-                                        Set = (v) => { eatSettings.EdibleActors[cachedIdx].Rate = v; Dirty(); }
+                                        Set = (v) => 
+                                        { 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                                eatSettings.EdibleActors[cachedIdx].Rate.ToString(), v.ToString());
+                                            eatSettings.EdibleActors[cachedIdx].Rate = v; Dirty(); 
+                                        }
                                     };
 
                                     m_Properties.NumberSpinner(propId, conversionConfig)
@@ -248,7 +278,12 @@ namespace ProtoAqua.Energy
                                     ValueType = typeof(ushort),
 
                                     Get = () => growthSettings.Interval,
-                                    Set = (v) => { growthSettings.Interval = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            growthSettings.Interval.ToString(), v.ToString());
+                                        growthSettings.Interval = (ushort)v; Dirty(); 
+                                    }
                                 };
 
                                 m_Properties.EnumField("growthInterval", growthFrequencyConfig)
@@ -269,7 +304,12 @@ namespace ProtoAqua.Energy
                                     WholeNumbers = true,
 
                                     Get = () => growthSettings.Interval,
-                                    Set = (v) => { growthSettings.Interval = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            growthSettings.Interval.ToString(), v.ToString());
+                                        growthSettings.Interval = (ushort)v; Dirty(); 
+                                    }
                                 };
                                 m_Properties.NumberSpinner("growthInterval", growthFrequencyConfig)
                                     .State.SetInteractable(!ShouldLockRule("growthInterval"));
@@ -299,7 +339,12 @@ namespace ProtoAqua.Energy
                                     ValueType = typeof(ushort),
 
                                     Get = () => reproSettings.Interval,
-                                    Set = (v) => { reproSettings.Interval = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            reproSettings.Interval.ToString(), v.ToString());
+                                        reproSettings.Interval = (ushort)v; Dirty(); 
+                                    }
                                 };
 
                                 m_Properties.EnumField("reproInterval", reproFrequencyConfig)
@@ -320,7 +365,12 @@ namespace ProtoAqua.Energy
                                     WholeNumbers = true,
 
                                     Get = () => reproSettings.Interval,
-                                    Set = (v) => { reproSettings.Interval = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            reproSettings.Interval.ToString(), v.ToString());
+                                        reproSettings.Interval = (ushort)v; Dirty(); 
+                                    }
                                 };
                                 m_Properties.NumberSpinner("reproInterval", reproFrequencyConfig)
                                     .State.SetInteractable(!ShouldLockRule("reproInterval"));
@@ -349,7 +399,12 @@ namespace ProtoAqua.Energy
                                     ValueType = typeof(ushort),
 
                                     Get = () => deathSettings.Age,
-                                    Set = (v) => { deathSettings.Age = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            deathSettings.Age.ToString(), v.ToString());
+                                        deathSettings.Age = (ushort)v; Dirty(); 
+                                    }
                                 };
 
                                 m_Properties.EnumField("deathAge", reproFrequencyConfig)
@@ -370,7 +425,12 @@ namespace ProtoAqua.Energy
                                     WholeNumbers = true,
 
                                     Get = () => deathSettings.Age,
-                                    Set = (v) => { deathSettings.Age = (ushort)v; Dirty(); }
+                                    Set = (v) => 
+                                    { 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            deathSettings.Age.ToString(), v.ToString());
+                                        deathSettings.Age = (ushort)v; Dirty(); 
+                                    }
                                 };
                                 m_Properties.NumberSpinner("deathAge", deathAgeConfig)
                                     .State.SetInteractable(!ShouldLockRule("deathAge"));

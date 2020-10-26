@@ -36,6 +36,7 @@ namespace ProtoAqua.Energy
         public void Sync(in EnergySimContext inContextA, in EnergySimContext inContextB)
         {
             float localSync = Services.Tweaks.Get<EnergyConfig>().CalculateSync(inContextA, inContextB);
+            Services.Analytics.LogModelingSyncChange(inContextA.Scenario.Header.Id, m_LastKnownSync.ToString(), localSync.ToString());
             UpdateLocalSync(localSync, false);
         }
 
