@@ -90,7 +90,7 @@ namespace ProtoAqua.Energy
                                         Get = () => resourceSettings.DesiredResources[cachedIdx].BaseValue,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "consumption",
                                                 resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
                                             resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty();
                                         }
@@ -112,7 +112,7 @@ namespace ProtoAqua.Energy
                                         Get = () => resourceSettings.DesiredResources[cachedIdx].BaseValue,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "consumption",
                                                 resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
                                             resourceSettings.DesiredResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
                                         }
@@ -145,7 +145,7 @@ namespace ProtoAqua.Energy
                                         Get = () => resourceSettings.ProducingResources[cachedIdx].BaseValue,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "production",
                                                 resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
                                             resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
                                         }
@@ -167,7 +167,7 @@ namespace ProtoAqua.Energy
                                         Get = () => resourceSettings.ProducingResources[cachedIdx].BaseValue,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "production",
                                                 resourceSettings.DesiredResources[cachedIdx].BaseValue.ToString(), v.ToString());
                                             resourceSettings.ProducingResources[cachedIdx].BaseValue = (ushort)v; Dirty(); 
                                         }
@@ -212,9 +212,12 @@ namespace ProtoAqua.Energy
                                         Get = () => eatSettings.EdibleActors[cachedIdx].Rate,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
-                                                eatSettings.EdibleActors[cachedIdx].Rate.ToString(), v.ToString());
+                                            float old = eatSettings.EdibleActors[cachedIdx].Rate;
+                                            Debug.Log("OLD: " + old);
                                             eatSettings.EdibleActors[cachedIdx].Rate = (float) v; Dirty(); 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "eating",
+                                                old.ToString(), v.ToString());
+                                            
                                         }
                                     };
 
@@ -238,9 +241,10 @@ namespace ProtoAqua.Energy
                                         Get = () => eatSettings.EdibleActors[cachedIdx].Rate,
                                         Set = (v) => 
                                         { 
-                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
-                                                eatSettings.EdibleActors[cachedIdx].Rate.ToString(), v.ToString());
+                                            float old = eatSettings.EdibleActors[cachedIdx].Rate;
                                             eatSettings.EdibleActors[cachedIdx].Rate = v; Dirty(); 
+                                            Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "eating",
+                                                old.ToString(), v.ToString());
                                         }
                                     };
 
@@ -280,7 +284,7 @@ namespace ProtoAqua.Energy
                                     Get = () => growthSettings.Interval,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "growth",
                                             growthSettings.Interval.ToString(), v.ToString());
                                         growthSettings.Interval = (ushort)v; Dirty(); 
                                     }
@@ -306,7 +310,7 @@ namespace ProtoAqua.Energy
                                     Get = () => growthSettings.Interval,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "growth",
                                             growthSettings.Interval.ToString(), v.ToString());
                                         growthSettings.Interval = (ushort)v; Dirty(); 
                                     }
@@ -341,7 +345,7 @@ namespace ProtoAqua.Energy
                                     Get = () => reproSettings.Interval,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "reproduction",
                                             reproSettings.Interval.ToString(), v.ToString());
                                         reproSettings.Interval = (ushort)v; Dirty(); 
                                     }
@@ -367,7 +371,7 @@ namespace ProtoAqua.Energy
                                     Get = () => reproSettings.Interval,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "reproduction",
                                             reproSettings.Interval.ToString(), v.ToString());
                                         reproSettings.Interval = (ushort)v; Dirty(); 
                                     }
@@ -401,7 +405,7 @@ namespace ProtoAqua.Energy
                                     Get = () => deathSettings.Age,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "death",
                                             deathSettings.Age.ToString(), v.ToString());
                                         deathSettings.Age = (ushort)v; Dirty(); 
                                     }
@@ -427,7 +431,7 @@ namespace ProtoAqua.Energy
                                     Get = () => deathSettings.Age,
                                     Set = (v) => 
                                     { 
-                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), 
+                                        Services.Analytics.LogModelingBehaviorChange(m_Scenario.Header.Id, inType.ScriptName(), "death",
                                             deathSettings.Age.ToString(), v.ToString());
                                         deathSettings.Age = (ushort)v; Dirty(); 
                                     }
