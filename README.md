@@ -38,6 +38,7 @@ Versions:
 | Key | Value | Description |
 | --- | --- | --- |
 | scenario_id | scenario_id | id of the current scenario being modeled |
+| click_location | "bar", "prev_button", "next_button" | the location on the tick slider that was clicked |
 | prev_tick | prev_tick | the previous tick of the model being viewed |
 | new_tick | new_tick | the new tick of the model being viewed |
 

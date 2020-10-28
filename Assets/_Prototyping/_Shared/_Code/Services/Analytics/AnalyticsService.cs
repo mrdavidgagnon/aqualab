@@ -25,6 +25,9 @@ namespace ProtoAqua
         private string m_CurrTick;
         private string m_CurrSync;
 
+        private ModelData m_PrevModelData;
+        private ModelData m_NewModelData;
+
         #endregion // Log Variables
 
         #region IService
@@ -50,11 +53,9 @@ namespace ProtoAqua
 
         #region Logging
 
-        // TODO: Should dictionaries be created here, or before the data gets passed to these functions?
-        public void LogModelingBehaviorChange(string scenarioId, string actorType, string valueType, string prevValue, string newValue)//, string prevSync, string newSync, string modelingViewCurrent)
+        // TODO: Instead of logging model values here, log that a value was changed, then log the details in LogModelingSyncChange
+        public void LogModelingBehaviorChange(string scenarioId, string actorType, string valueType, string prevValue, string newValue)
         {
-            RuleData ruleData = new RuleData(actorType, valueType, newValue);
-
             if (m_ScenarioId != scenarioId)
             {
                 m_ScenarioId = scenarioId;
@@ -64,21 +65,22 @@ namespace ProtoAqua
             {
                 { "scenario_id", scenarioId },
                 { "curr_tick", m_CurrTick },
-                { "curr_sync", m_CurrSync }, // TODO: Sync updated after values are changed and logged
+                { "prev_sync", m_CurrSync },
                 { "prev_value", prevValue },
-                { "rule_data", ruleData.ToJSONString() }
+                { "rule_data", new RuleData(actorType, valueType, newValue).DataString }
             };
 
             m_Logger.Log(new LogEvent(data));
         }
 
-        public void LogModelingTickChange(string prevTick, string newTick)
+        public void LogModelingTickChange(string clickLocation, string prevTick, string newTick)
         {
             m_CurrTick = newTick;
 
             Dictionary<string, string> data = new Dictionary<string, string>()
             {
                 { "scenario_id", m_ScenarioId},
+                { "click_location", clickLocation },
                 { "prev_tick", prevTick },
                 { "new_tick", newTick }
             };
@@ -95,41 +97,59 @@ namespace ProtoAqua
                 m_ScenarioId = scenarioId;
             }
 
-            Dictionary<string, string> data = new Dictionary<string, string>()
+            if (m_PrevModelData != null && m_NewModelData != null)
             {
-                { "scenario_id", scenarioId },
-                { "prev_sync", prevSync },
-                { "new_sync", newSync }
-            };
-
-            m_Logger.Log(new LogEvent(data));
+                Dictionary<string, string> data = new Dictionary<string, string>()
+                {
+                    { "scenario_id", scenarioId },
+                    { "prev_sync", prevSync },
+                    { "new_sync", newSync },
+                    { "prev_model_data", m_PrevModelData.DataString },
+                    { "new_model_data", m_NewModelData.DataString }
+                };
+                m_Logger.Log(new LogEvent(data));
+            }
         }
 
         #endregion // Logging
     }
 
+    #region Data Classes
+
+    // TODO: Refactor classes to implement an interface, since both have DataString field ?
+
     public class RuleData
     {
-        public string Organism { get; set; }
-        public string ValueType { get; set; }
-        public string CurrValue { get; set; }
+        public string DataString { get; set; }
 
         public RuleData(string organism, string valueType, string currValue)
         {
-            Organism = organism;
-            ValueType = valueType;
-            CurrValue = currValue;
-        }
-
-        // Return rule data values as a single string in JSON format
-        public string ToJSONString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{{\"organism\":\"{0}\"}},{{\"value_type\":\"{1}\"}},{{\"curr_value\":\"{2}\"}}", Organism, ValueType, CurrValue);
-            string jsonString = sb.ToString();
-            sb.Clear();
-
-            return jsonString;
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendFormat("{{\"organism\":\"{0}\"}},{{\"value_type\":\"{1}\"}},{{\"curr_value\":\"{2}\"}}", organism, valueType, currValue);
+            DataString = stringBuilder.ToString();
+            stringBuilder.Clear();
         }
     }
+
+    public class ModelData
+    {
+        public string DataString { get; set; }
+
+        // string prevTick, string newTick, string changedRuleData
+        public ModelData(Dictionary<string, string> data)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            foreach (KeyValuePair<string, string> kvp in data)
+            {
+                stringBuilder.AppendFormat("{{\"{0}\":\"{1}\"}},", kvp.Key, kvp.Value);
+            }
+
+            stringBuilder.Length--;
+            DataString = stringBuilder.ToString();
+            stringBuilder.Clear();
+        }
+    }
+    
+    #endregion // Data Classes
 }

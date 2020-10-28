@@ -85,7 +85,7 @@ namespace ProtoAqua.Energy
 
             int currentTick = (int) inNewValue;
 
-            Services.Analytics.LogModelingTickChange(m_CurrentTickCounter.text, inNewValue.ToString());
+            Services.Analytics.LogModelingTickChange("bar", m_CurrentTickCounter.text, inNewValue.ToString());
 
             m_CurrentBufferDelay = m_ChangeBufferedDelay;
             UpdateTickText(currentTick);
@@ -221,11 +221,16 @@ namespace ProtoAqua.Energy
 
         private void OnPrevButton()
         {
+            Services.Analytics.LogModelingTickChange("prev_button", m_CurrentTickCounter.text, 
+                                    (m_Slider.value - 1).ToString());
             m_Slider.value -= 1;
+            
         }
 
         private void OnNextButton()
         {
+            Services.Analytics.LogModelingTickChange("next_button", m_CurrentTickCounter.text, 
+                                    (m_Slider.value + 1).ToString());
             m_Slider.value += 1;
         }
     }
